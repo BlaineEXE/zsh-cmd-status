@@ -26,12 +26,12 @@ function _zsh_cmd_render_duration() {
 }
 
 function _zsh_cmd_duration() {
-  if [ -z "${zsh_cmd_status_start_time}" ]; then
+  if [ -z "${_zsh_cmd_status_start_time}" ]; then
       return 0
   fi
   local end_time
   end_time="$( date +%s )"
-  local duration=$(( end_time - zsh_cmd_status_start_time ))
+  local duration=$(( end_time - _zsh_cmd_status_start_time ))
   local threshold=${ZSH_CMD_STATUS_DURATION_THRESHOLD:=10}
   if [ "$duration" -lt "$threshold" ]; then
     return 0
@@ -41,12 +41,20 @@ function _zsh_cmd_duration() {
 }
 
 function _zsh-cmd-status-preexec() {
-  zsh_cmd_status_start_time="$( date +%s )"
+  _zsh_cmd_status_preexec_was_run=true
+  _zsh_cmd_status_start_time="$( date +%s )"
 }
 
 function _zsh-cmd-status-precmd() {
+  # First thing MUST be to get return code
   local ret="$(_zsh_cmd_return_code)"
   local dur="$(_zsh_cmd_duration)"
+
+  # If a command isn't present when enter/return is pressed, preexec functions
+  # don't execute. If this happens, don't output any stats.
+  if [[ -z "${_zsh_cmd_status_preexec_was_run}" ]]; then
+    return 0
+  fi
 
   # Join the retcode and duration with an ampersand
   # If one is unset, no ampersand will be added
@@ -58,6 +66,7 @@ function _zsh-cmd-status-precmd() {
   fi
 
   unset _start_time
+  unset _zsh_cmd_status_preexec_was_run
 }
 
 autoload -Uz add-zsh-hook
