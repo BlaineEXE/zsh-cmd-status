@@ -30,7 +30,7 @@ function _zsh_cmd_duration() {
       return 0
   fi
   local end_time
-  end_time="$( date +%s )"
+  end_time="$SECONDS"
   local duration=$(( end_time - _zsh_cmd_status_start_time ))
   local threshold=${ZSH_CMD_STATUS_DURATION_THRESHOLD:=10}
   if [ "$duration" -lt "$threshold" ]; then
@@ -42,7 +42,7 @@ function _zsh_cmd_duration() {
 
 function _zsh-cmd-status-preexec() {
   _zsh_cmd_status_preexec_was_run=true
-  _zsh_cmd_status_start_time="$( date +%s )"
+  _zsh_cmd_status_start_time="$SECONDS"
 }
 
 function _zsh-cmd-status-precmd() {
